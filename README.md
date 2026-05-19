@@ -71,13 +71,13 @@ All three models follow a **two-phase transfer learning** approach:
 | Optimizer | Adam | Adam | Adam |
 | LR Scheduler | CosineAnnealingLR | CosineAnnealingLR | StepLR |
 | Dropout | 0.2 | 0.3 | — |
-| Prediction Threshold | 0.5 | 0.3 | 0.5 |
+| Prediction Threshold | 0.5 | 0.5 | 0.5 |
 | Best Model Criterion | Val F1-macro | Val F1-macro | Val F1-macro |
 
 ### Class Imbalance Handling
 
 - **DenseNet121**: Manually boosted `pos_weight` for problematic genres (romance ×3, musical ×3, horror ×2, family ×1.5) combined with **Focal Loss** (γ=2.0) to focus training on frequently misclassified genres
-- **EfficientNet-B0**: Standard `pos_weight` with threshold lowered to **0.3** to improve recall for minority genres
+- **EfficientNet-B0**: Standard `pos_weight` with threshold **0.5**, same as the other models for fair comparison
 - **ResNet50**: Standard `pos_weight`; Phase 2 selectively unfreezes only `layer4` + `fc` for targeted fine-tuning
 
 ---
@@ -88,15 +88,15 @@ All three models follow a **two-phase transfer learning** approach:
 
 | Metric | DenseNet121 | EfficientNet-B0 | ResNet50 |
 |--------|-------------|-----------------|----------|
-| **F1-score (Micro)** | 0.4872 | 0.4586 | **0.5085** |
-| **F1-score (Macro)** | 0.4143 | 0.4141 | **0.4178** |
-| **F1-score (Weighted)** | 0.5539 | **0.5995** | 0.5571 |
-| **mAP (Macro)** | **0.4741** | 0.4619 | — |
-| **AUC-ROC (Weighted)** | 0.6528 | 0.6653 | **0.6916** |
-| **Hamming Loss** | 0.3429 | 0.6171 | **0.2900** |
+| **F1-score (Micro)** | 0.4872 | 0.4519 | **0.5085** |
+| **F1-score (Macro)** | **0.4143** | 0.3795 | 0.4178 |
+| **F1-score (Weighted)** | 0.5539 | 0.5302 | **0.5571** |
+| **mAP (Macro)** | **0.4741** | 0.4485 | — |
+| **AUC-ROC (Weighted)** | 0.6528 | 0.6420 | **0.6916** |
+| **Hamming Loss** | 0.3429 | 0.3743 | **0.2900** |
 | **Exact Match Accuracy** | 0.0000 | 0.0000 | 0.0000 |
 | **Total Parameters** | 6,968,206 | **4,025,482** | 23,536,718 |
-| **Inference Time / Image** | 14.41 ms | 7.77 ms | **2.73 ms** |
+| **Inference Time / Image** | 14.41 ms | 7.56 ms | **2.73 ms** |
 | **Training Time / Epoch** | 1.9 s | **0.8 s** | ~2–3 s |
 
 > **Note on Exact Match Accuracy = 0:** This is expected behavior for multi-label classification on a small dataset with overlapping genres. This strict metric requires every single genre label to be correct simultaneously.
@@ -123,27 +123,27 @@ All three models follow a **two-phase transfer learning** approach:
 | **Macro avg** | **0.3820** | **0.5152** | **0.4143** | — |
 | **Weighted avg** | **0.5491** | **0.5907** | **0.5539** | — |
 
-### Per-Genre Performance — EfficientNet-B0 (threshold=0.3)
+### Per-Genre Performance — EfficientNet-B0 (threshold=0.5)
 
 | Genre | Precision | Recall | F1-score | Support |
 |-------|-----------|--------|----------|---------|
-| action | 0.7143 | 0.9722 | 0.8235 | 36 |
-| adventure | 0.4651 | 0.9091 | 0.6154 | 22 |
-| animation | 0.2222 | 1.0000 | 0.3636 | 8 |
-| comedy | 0.3636 | 0.9231 | 0.5217 | 13 |
-| crime | 0.2889 | 1.0000 | 0.4483 | 13 |
-| drama | 0.6977 | 0.8824 | 0.7792 | 34 |
-| family | 0.1111 | 1.0000 | 0.2000 | 4 ⚠ |
-| fantasy | 0.2273 | 0.9091 | 0.3636 | 11 |
-| horror | 0.0682 | 1.0000 | 0.1277 | 3 ⚠ |
+| action | 0.7083 | 0.4722 | 0.5667 | 36 |
+| adventure | 0.6000 | 0.5455 | 0.5714 | 22 |
+| animation | 0.6154 | 1.0000 | 0.7619 | 8 |
+| comedy | 0.3889 | 0.5385 | 0.4516 | 13 |
+| crime | 0.3750 | 0.6923 | 0.4865 | 13 |
+| drama | 0.8235 | 0.8235 | 0.8235 | 34 |
+| family | 0.2143 | 0.7500 | 0.3333 | 4 ⚠ |
+| fantasy | 0.2308 | 0.2727 | 0.2500 | 11 |
+| horror | 0.0000 | 0.0000 | 0.0000 | 3 ⚠ |
 | musical | 0.0000 | 0.0000 | 0.0000 | 0 ⚠ |
-| mystery | 0.2708 | 1.0000 | 0.4262 | 13 |
-| romance | 0.0208 | 1.0000 | 0.0408 | 1 ⚠ |
-| scifi | 0.2889 | 0.9286 | 0.4407 | 14 |
-| thriller | 0.4773 | 1.0000 | 0.6462 | 21 |
-| **Micro avg** | **0.3025** | **0.9482** | **0.4586** | 193 |
-| **Macro avg** | **0.3012** | **0.8946** | **0.4141** | — |
-| **Weighted avg** | **0.4699** | **0.9482** | **0.5995** | — |
+| mystery | 0.1818 | 0.3077 | 0.2286 | 13 |
+| romance | 0.0000 | 0.0000 | 0.0000 | 1 ⚠ |
+| scifi | 0.2500 | 0.2143 | 0.2308 | 14 |
+| thriller | 0.5600 | 0.6667 | 0.6087 | 21 |
+| **Micro avg** | **0.3789** | **0.5596** | **0.4519** | 193 |
+| **Macro avg** | **0.3534** | **0.4488** | **0.3795** | — |
+| **Weighted avg** | **0.5315** | **0.5596** | **0.5302** | — |
 
 ### Per-Genre Performance — ResNet50 (threshold=0.5)
 
@@ -224,7 +224,7 @@ All notebooks use `sample_indices.npy` with `seed=42` so the 10 visualized test 
 ## Key Findings
 
 - **ResNet50** achieves the best AUC-ROC (0.6916) and lowest Hamming Loss (0.2900), indicating the strongest overall class discrimination despite being the largest model (23.5M parameters)
-- **EfficientNet-B0** is the most efficient model: fewest parameters (4M), fastest inference (7.77 ms), and highest weighted F1 (0.5995) — achieved by lowering the threshold to 0.3 which substantially boosts recall at the cost of precision
-- **DenseNet121** achieves the highest mAP (0.4741), reflecting better-calibrated probability scores enabled by Focal Loss combined with manually boosted `pos_weight`
+- **EfficientNet-B0** is the most efficient model: fewest parameters (4M) and fastest inference (7.56 ms), but scores the lowest across most metrics (F1-macro 0.3795, AUC-ROC 0.6420) when using a uniform threshold of 0.5
+- **DenseNet121** achieves the highest mAP (0.4741) and a competitive F1-macro (0.4143), reflecting better-calibrated probability scores enabled by Focal Loss combined with manually boosted `pos_weight`
 - All models fail on **extreme minority genres** (musical, romance) with 0–1 test samples — a fundamental limitation of the small dataset size (292 total images)
-- The threshold trade-off is clearly visible: EfficientNet-B0 at threshold=0.3 has high recall but low precision and high Hamming Loss; DenseNet121 and ResNet50 at threshold=0.5 achieve a better precision-recall balance
+- With all three models now using the same threshold of **0.5**, ResNet50 leads in F1-micro (0.5085), AUC-ROC (0.6916), and Hamming Loss (0.2900), making it the strongest overall performer
